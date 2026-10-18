@@ -1,7 +1,7 @@
 {
-  "name": "remotion-ai-video-generator",
+  "name": "vyralis",
   "version": "1.0.0",
-  "description": "AI-scripted animated video generator powered by Remotion, Edge-TTS, and escribe-humano",
+  "description": "Deterministic, code-driven vertical video engine powered by Remotion, Edge-TTS, Vyral Content 3-layer architecture, and agnostic LLMs",
   "type": "module",
   "scripts": {
     "dev": "remotion preview src/remotion/index.ts",
