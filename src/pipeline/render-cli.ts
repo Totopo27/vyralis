@@ -28,8 +28,9 @@ async function main() {
   const renderableScenes: RenderableScene[] = [];
 
   for (const scene of script.scenes) {
-    console.log(`  -> Procesando escena [${scene.id}]: "${scene.narrativeText.slice(0, 35)}..."`);
-    const ttsResult = await tts.synthesize(scene.id, scene.narrativeText);
+    const voiceoverText = scene.verbalVoiceover || scene.narrativeText || '';
+    console.log(`  -> Procesando escena [${scene.id}]: "${voiceoverText.slice(0, 35)}..."`);
+    const ttsResult = await tts.synthesize(scene.id, voiceoverText);
 
     // Calcular duración en fotogramas: (milisegundos / 1000) * fps
     const durationInFrames = Math.max(

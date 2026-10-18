@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sequence, useVideoConfig } from 'remotion';
-import type { VideoCompositionProps } from '../types/schema';
+import type { VideoCompositionProps, RenderableScene } from '../types/schema';
 import { SceneView } from './components/SceneView';
 
 export const MainVideoComposition: React.FC<VideoCompositionProps> = ({ scenes }) => {
@@ -18,7 +18,7 @@ export const MainVideoComposition: React.FC<VideoCompositionProps> = ({ scenes }
         position: 'relative',
       }}
     >
-      {scenes.map((scene) => {
+      {scenes.map((scene: RenderableScene) => {
         const fromFrame = accumulatedFrames;
         const duration = scene.durationInFrames;
         accumulatedFrames += duration;
