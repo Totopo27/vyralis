@@ -2,3 +2,10 @@ node_modules/
 out/
 public/audio-*.mp3
 .remotion/
+
+# Secretos y claves de API
+.env
+.env.*
+*.pem
+*.key
+secrets.json

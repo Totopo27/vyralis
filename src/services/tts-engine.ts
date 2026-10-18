@@ -22,7 +22,9 @@ export class TTSEngine {
   }
 
   async synthesize(sceneId: string, text: string): Promise<TTSResult> {
-    const audioFileName = `audio-${sceneId}.mp3`;
+    // Sanitizar sceneId para prevenir Path Traversal y caracteres inválidos
+    const safeSceneId = sceneId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const audioFileName = `audio-${safeSceneId}.mp3`;
     const audioFilePath = path.join(this.publicDir, audioFileName).replace(/\\/g, '/');
 
     const pythonScript = `
@@ -64,7 +66,10 @@ asyncio.run(run())
 `;
 
     return new Promise<TTSResult>((resolve, reject) => {
-      const proc = spawn('python', ['-c', pythonScript, text, this.voice, audioFilePath]);
+      // Timeout guard de 30s para evitar procesos zombies en cuelgues de red
+      const proc = spawn('python', ['-c', pythonScript, text, this.voice, audioFilePath], {
+        timeout: 30000,
+      });
       let stdout = '';
       let stderr = '';
 
@@ -76,7 +81,16 @@ asyncio.run(run())
         stderr += d.toString();
       });
 
-      proc.on('close', (code) => {
+      proc.on('error', (err) => {
+        reject(new Error(`Error al iniciar el proceso TTS: ${err.message}`));
+      });
+
+      proc.on('close', (code, signal) => {
+        if (signal === 'SIGTERM') {
+          reject(new Error(`El proceso TTS excedió el tiempo límite de ejecución (30s timeout)`));
+          return;
+        }
+
         if (code !== 0) {
           reject(new Error(`TTS generation failed with code ${code}: ${stderr}`));
           return;
@@ -86,6 +100,11 @@ asyncio.run(run())
           const lines = stdout.trim().split('\n');
           const lastLine = lines[lines.length - 1];
           const parsed = JSON.parse(lastLine);
+
+          if (typeof parsed.durationMs !== 'number' || !Array.isArray(parsed.words)) {
+            throw new Error('Estructura de respuesta inválida desde el motor TTS');
+          }
+
           resolve({
             audioFileName,
             durationMs: parsed.durationMs,
