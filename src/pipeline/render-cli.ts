@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
 import { ScriptGenerator } from '../services/script-generator';
+import { createLLMProvider } from '../services/llm';
 import { TTSEngine } from '../services/tts-engine';
 import type { RenderableScene, VideoCompositionProps } from '../types/schema';
 
@@ -17,9 +18,11 @@ async function main() {
     fs.mkdirSync(outDir, { recursive: true });
   }
 
-  // 1. Generar Guión (escribe-humano)
+  // 1. Generar Guión (escribe-humano) con LLM agnóstico
+  const llmProvider = createLLMProvider();
+  console.log(`🤖 Proveedor LLM activo: ${llmProvider.name}`);
   console.log('📝 Paso 1: Generando guion técnico con escribe-humano...');
-  const scriptGen = new ScriptGenerator();
+  const scriptGen = new ScriptGenerator(llmProvider);
   const script = await scriptGen.generate('Remotion y React');
 
   // 2. Síntesis de Audio y Extracción de Timestamps (Edge-TTS)
